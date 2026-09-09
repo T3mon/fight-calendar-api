@@ -55,11 +55,19 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
+// Swagger is available on the deployed "dev" environment too (ASPNETCORE_ENVIRONMENT=Staging) -
+// that's the whole point of having a dev deployment to poke at. The migrations endpoint and the
+// detailed developer exception page stay local-only (true Development), since both would leak
+// implementation details or let a stranger apply schema changes if exposed on a public URL.
+if (app.Environment.IsDevelopment() || app.Environment.IsStaging())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+
 if (app.Environment.IsDevelopment())
 {
     app.UseMigrationsEndPoint();
-    app.UseSwagger();
-    app.UseSwaggerUI();
 }
 else
 {
