@@ -1,4 +1,4 @@
-namespace FightCalendar.Web.Services.Firestore;
+namespace FightCalendar.Data.Services.Firestore;
 
 // Shape of what the tapology-firebase-scraper project writes into Firestore
 // (see that repo's README for the canonical example document).

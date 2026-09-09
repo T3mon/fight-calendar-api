@@ -1,4 +1,4 @@
-namespace FightCalendar.Web.Models.Domain;
+namespace FightCalendar.Data.Models.Domain;
 
 public class Fighter
 {

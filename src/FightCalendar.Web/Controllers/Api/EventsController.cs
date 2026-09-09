@@ -1,4 +1,4 @@
-using FightCalendar.Web.Data;
+using FightCalendar.Data;
 using FightCalendar.Web.Models.Api;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;

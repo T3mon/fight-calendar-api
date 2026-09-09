@@ -1,7 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using FightCalendar.Web.Data;
-using FightCalendar.Web.Services.Firestore;
-using FightCalendar.Web.Services.Sync;
+using FightCalendar.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,12 +26,6 @@ builder.Services.AddSwaggerGen(options =>
 
 builder.Services.AddControllers();
 builder.Services.AddProblemDetails();
-
-builder.Services.Configure<FirestoreOptions>(builder.Configuration.GetSection(FirestoreOptions.SectionName));
-builder.Services.AddHttpClient<FirestoreEventsClient>();
-builder.Services.AddScoped<EventSyncService>();
-builder.Services.AddScoped<EventSyncRunner>();
-builder.Services.AddHostedService<FirestoreSyncBackgroundService>();
 
 // Lets a separately-hosted React frontend (a different origin) call /api/*.
 // Origins come from config, not hardcoded, so prod can point at the real

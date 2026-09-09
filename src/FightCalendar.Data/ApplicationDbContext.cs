@@ -1,8 +1,8 @@
-using FightCalendar.Web.Models.Domain;
+using FightCalendar.Data.Models.Domain;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
-namespace FightCalendar.Web.Data;
+namespace FightCalendar.Data;
 
 public class ApplicationDbContext : IdentityDbContext
 {

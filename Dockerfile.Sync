@@ -2,14 +2,14 @@ FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 
 COPY FightCalendar.sln .
-COPY src/FightCalendar.Web/FightCalendar.Web.csproj src/FightCalendar.Web/
+COPY src/FightCalendar.Sync/FightCalendar.Sync.csproj src/FightCalendar.Sync/
 COPY src/FightCalendar.Data/FightCalendar.Data.csproj src/FightCalendar.Data/
-RUN dotnet restore src/FightCalendar.Web/FightCalendar.Web.csproj
+RUN dotnet restore src/FightCalendar.Sync/FightCalendar.Sync.csproj
 
 COPY src/ src/
-RUN dotnet publish src/FightCalendar.Web/FightCalendar.Web.csproj -c Release -o /app --no-restore
+RUN dotnet publish src/FightCalendar.Sync/FightCalendar.Sync.csproj -c Release -o /app --no-restore
 
-FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
+FROM mcr.microsoft.com/dotnet/runtime:10.0 AS runtime
 WORKDIR /app
 
 # Npgsql probes for GSSAPI/Kerberos support on every connection; the slim
@@ -19,6 +19,4 @@ RUN apt-get update && apt-get install -y --no-install-recommends libgssapi-krb5-
 
 COPY --from=build /app .
 
-ENV ASPNETCORE_URLS=http://+:8080
-EXPOSE 8080
-ENTRYPOINT ["dotnet", "FightCalendar.Web.dll"]
+ENTRYPOINT ["dotnet", "FightCalendar.Sync.dll"]

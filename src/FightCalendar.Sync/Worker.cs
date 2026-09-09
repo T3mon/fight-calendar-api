@@ -1,14 +1,15 @@
-using FightCalendar.Web.Services.Firestore;
+using FightCalendar.Data.Services.Firestore;
+using FightCalendar.Data.Services.Sync;
 using Microsoft.Extensions.Options;
 
-namespace FightCalendar.Web.Services.Sync;
+namespace FightCalendar.Sync;
 
 // Runs EventSyncRunner once at startup and then on a fixed interval
-// (SyncIntervalHours, default 12h) for the lifetime of the app. The
+// (SyncIntervalHours, default 12h) for the lifetime of the process. The
 // underlying Firestore data only changes as often as someone runs the
 // scraper (roughly weekly), so this is deliberately a low-frequency poll,
 // not a tight loop.
-public class FirestoreSyncBackgroundService(IServiceScopeFactory scopeFactory, IOptions<FirestoreOptions> options, ILogger<FirestoreSyncBackgroundService> logger) : BackgroundService
+public class Worker(IServiceScopeFactory scopeFactory, IOptions<FirestoreOptions> options, ILogger<Worker> logger) : BackgroundService
 {
     private readonly FirestoreOptions _options = options.Value;
 

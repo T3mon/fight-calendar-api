@@ -2,7 +2,7 @@
 
 #nullable disable
 
-namespace FightCalendar.Web.Migrations
+namespace FightCalendar.Data.Migrations
 {
     /// <inheritdoc />
     public partial class AddEventSubSeries : Migration

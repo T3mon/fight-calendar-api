@@ -4,7 +4,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace FightCalendar.Web.Migrations
+namespace FightCalendar.Data.Migrations
 {
     /// <inheritdoc />
     public partial class InitialCreate : Migration

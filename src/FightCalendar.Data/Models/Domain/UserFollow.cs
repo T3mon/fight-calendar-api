@@ -1,4 +1,4 @@
-namespace FightCalendar.Web.Models.Domain;
+namespace FightCalendar.Data.Models.Domain;
 
 // A follow is either a whole promotion or a single fighter, never both -
 // enforced by a DB check constraint (see ApplicationDbContext.OnModelCreating).

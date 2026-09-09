@@ -1,7 +1,7 @@
 using System.Text.Json;
 using Microsoft.Extensions.Options;
 
-namespace FightCalendar.Web.Services.Firestore;
+namespace FightCalendar.Data.Services.Firestore;
 
 // Reads the "events" collection straight from Firestore's public REST API.
 // No credentials needed: the tapology-firebase-scraper project's security

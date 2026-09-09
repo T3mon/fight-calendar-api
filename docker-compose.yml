@@ -28,5 +28,15 @@ services:
       postgres:
         condition: service_healthy
 
+  sync:
+    build:
+      context: .
+      dockerfile: Dockerfile.Sync
+    environment:
+      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=fightcalendar;Username=fightcalendar;Password=fightcalendar"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
 volumes:
   postgres-data:
