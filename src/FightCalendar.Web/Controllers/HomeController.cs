@@ -13,9 +13,13 @@ public class HomeController : Controller
         _logger = logger;
     }
 
+    // This is an API-only project; the root path has no real content to
+    // show. Redirecting to /api/health means hitting the bare domain
+    // immediately tells you which environment you're looking at, instead
+    // of the unbranded default MVC template page.
     public IActionResult Index()
     {
-        return View();
+        return Redirect("/api/health");
     }
 
     public IActionResult Privacy()
