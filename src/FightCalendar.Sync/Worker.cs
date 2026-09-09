@@ -1,5 +1,5 @@
-using FightCalendar.Data.Services.Firestore;
-using FightCalendar.Data.Services.Sync;
+using FightCalendar.Sync.Firestore;
+using FightCalendar.Sync.Services;
 using Microsoft.Extensions.Options;
 
 namespace FightCalendar.Sync;

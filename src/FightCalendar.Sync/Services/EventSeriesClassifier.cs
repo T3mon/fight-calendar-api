@@ -1,6 +1,6 @@
 using System.Text.RegularExpressions;
 
-namespace FightCalendar.Data.Services.Sync;
+namespace FightCalendar.Sync.Services;
 
 // Discovers a promotion's recurring sub-series (e.g. "Friday Fights" within
 // ONE, "Fight Night" within UFC) directly from event titles, with no

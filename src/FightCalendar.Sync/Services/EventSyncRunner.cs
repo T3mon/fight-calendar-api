@@ -1,6 +1,6 @@
-using FightCalendar.Data.Services.Firestore;
+using FightCalendar.Sync.Firestore;
 
-namespace FightCalendar.Data.Services.Sync;
+namespace FightCalendar.Sync.Services;
 
 // Thin orchestrator: fetch from Firestore, hand off to EventSyncService.
 // Scoped so it can be resolved fresh both from the periodic background

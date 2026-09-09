@@ -1,10 +1,10 @@
 using System.Globalization;
 using FightCalendar.Data;
 using FightCalendar.Data.Models.Domain;
-using FightCalendar.Data.Services.Firestore;
+using FightCalendar.Sync.Firestore;
 using Microsoft.EntityFrameworkCore;
 
-namespace FightCalendar.Data.Services.Sync;
+namespace FightCalendar.Sync.Services;
 
 // Transforms the raw Firestore feed into the normalized Postgres schema.
 // Upserts by stable keys (Tapology's own slug/fighter ids) so re-running

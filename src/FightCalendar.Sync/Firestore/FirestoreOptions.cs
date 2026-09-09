@@ -1,4 +1,4 @@
-namespace FightCalendar.Data.Services.Firestore;
+namespace FightCalendar.Sync.Firestore;
 
 public class FirestoreOptions
 {
