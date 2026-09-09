@@ -2,31 +2,7 @@
 
 Read-only JSON API aggregating upcoming combat sports events (UFC, ONE, RIZIN, BKFC, and other tracked promotions), scraped from [Tapology](https://www.tapology.com). Built to be the shared backend for whatever frontends come later (web, mobile, Telegram bot) rather than bundled with any one of them.
 
-## Architecture
-
-```mermaid
-flowchart TD
-    You[You / local machine]
-    Compose[Docker Compose\ndev-only, isolated]
-    GH[GitHub - main branch]
-    Scraper[tapology-firebase-scraper\nrun manually]
-    FS[(Firestore\npublic read)]
-    Staging[Render: Staging\nauto-deploy on push]
-    Prod[Render: Production\nmanual deploy only]
-    NeonS[(Neon: fight-calendar-staging)]
-    NeonP[(Neon: fight-calendar-production)]
-
-    You --> Compose
-    You --> GH
-    You --> Scraper
-    Scraper --> FS
-    GH -- auto-deploy --> Staging
-    GH -. manual deploy .-> Prod
-    FS --> Staging
-    FS --> Prod
-    Staging --> NeonS
-    Prod --> NeonP
-```
+This is one repo in a multi-repo project - for the full system architecture, why it's shaped this way, and a guide for onboarding a new contributor, see the **[project wiki](https://github.com/T3mon/fight-calendar-api/wiki)**. Everything below is specific to this repo.
 
 ## Tech stack
 
@@ -38,12 +14,6 @@ flowchart TD
 | Hosting | [Render](https://render.com), Docker-based Web Services |
 | Event data source | Firebase Firestore, fed by a separate scraper project |
 | API docs | Swagger / OpenAPI at `/swagger` (Staging only, disabled in Production) |
-
-## Why two databases, and why Firestore?
-
-**Two Postgres databases (Staging + Production), never shared.** A migration or test run against Staging must never be able to touch real data. Each environment is a fully separate Neon project with its own connection string - see [Deployments](#deployments) below.
-
-**Firestore is not "our" database - it's a landing zone.** The actual scraping happens in a separate project, [`tapology-firebase-scraper`](https://github.com/T3mon/Tapology-firebase-scraper) (Node.js), which someone runs manually (or on a schedule) on any machine. It writes raw scraped events into a shared Firebase Firestore project (`fightfinder-8eb4b`) with public read rules - no credentials needed to read it. This API's `EventSyncService` (see `Services/Sync`) reads that raw feed over Firestore's public REST API and normalizes it into the real queryable schema here (`Promotions`, `Events`, `Fighters`, `Bouts`). Both Staging and Production read from the *same* Firestore project independently every 12 hours - the raw event data itself doesn't need duplicating per environment, only the normalized copies in Postgres do.
 
 ## Project layout
 
@@ -102,7 +72,3 @@ Both run on Render's free tier - the first request after ~15 minutes of inactivi
 ```bash
 dotnet ef database update --connection "<that environment's connection string>"
 ```
-
-## Related repositories
-
-- [T3mon/Tapology-firebase-scraper](https://github.com/T3mon/Tapology-firebase-scraper) - populates the shared Firestore project this API reads from
