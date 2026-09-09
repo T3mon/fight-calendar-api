@@ -1,4 +1,4 @@
-namespace FightCalendar.Auth.Services;
+namespace FightCalendar.Auth.Options;
 
 public class JwtOptions
 {

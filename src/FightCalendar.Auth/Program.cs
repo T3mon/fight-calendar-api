@@ -1,4 +1,5 @@
 using System.Text;
+using FightCalendar.Auth.Options;
 using FightCalendar.Auth.Services;
 using FightCalendar.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -61,6 +62,9 @@ builder.Services.AddSwaggerGen(options =>
         Version = "v1",
         Description = "Google sign-in and JWT issuance for Fight Calendar's other services."
     });
+
+    var xmlFile = $"{System.Reflection.Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFile));
 });
 
 builder.Services.AddControllers();

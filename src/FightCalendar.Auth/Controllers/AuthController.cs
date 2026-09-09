@@ -1,5 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using FightCalendar.Auth.Models;
+using FightCalendar.Auth.Options;
 using FightCalendar.Auth.Services;
 using Google.Apis.Auth;
 using Microsoft.AspNetCore.Authorization;
@@ -60,7 +61,7 @@ public class AuthController(UserManager<IdentityUser> userManager, JwtTokenServi
         return Ok(new AuthResponseDto(token, expiresAt, user.Email!));
     }
 
-    /// <summary>Returns the signed-in user's identity. Requires a valid <c>Authorization: Bearer</c> token from <see cref="SignInWithGoogle"/>.</summary>
+    /// <summary>Returns the signed-in user's identity. Requires a valid <c>Authorization: Bearer</c> token from a prior <c>POST /auth/google</c> call.</summary>
     [HttpGet("me")]
     [Authorize]
     public IActionResult GetCurrentUser()
