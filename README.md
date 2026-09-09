@@ -62,8 +62,10 @@ Visit `http://localhost:5080/swagger` (port comes from `Properties/launchSetting
 
 | Environment | URL | Deploy trigger | Database |
 |---|---|---|---|
-| Staging | `fight-calendar-api-staging.onrender.com` | Automatic, on every push to `main` | Neon project `fight-calendar-staging` |
+| Staging | `fight-calendar-api.onrender.com` | Automatic, on every push to `main` | Neon project `fight-calendar-staging` |
 | Production | `fight-calendar-api-production.onrender.com` | Manual - click "Deploy" in the Render dashboard | Neon project `fight-calendar-production` |
+
+> Staging's hostname doesn't say "staging" - the Render service was created as `fight-calendar-api` and renamed to `fight-calendar-api-staging` afterward. Renaming a Render service's display name does **not** change its `.onrender.com` subdomain, which stays fixed from creation. Production was created with its final name directly, so no such mismatch there.
 
 Both run on Render's free tier - the first request after ~15 minutes of inactivity takes 30-50 seconds while the instance wakes up.
 
