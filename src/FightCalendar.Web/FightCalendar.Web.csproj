@@ -4,6 +4,8 @@
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <!-- JSON-only API with no wwwroot - opt out instead of keeping an empty folder around. -->
+    <StaticWebAssetsEnabled>false</StaticWebAssetsEnabled>
     <UserSecretsId>aspnet-FightCalendar.Web-a9fd289b-e2dc-48bb-a17b-225a95fd8593</UserSecretsId>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <!-- CS1591: only the API surface gets /// doc comments, not every internal class.
@@ -14,7 +16,6 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="10.0.12" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="10.0.12" />
-    <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="10.0.12" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.12">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>

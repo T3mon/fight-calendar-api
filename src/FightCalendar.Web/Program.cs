@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using FightCalendar.Web.Data;
 using FightCalendar.Web.Services.Firestore;
@@ -27,11 +26,8 @@ builder.Services.AddSwaggerGen(options =>
     options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFile));
 });
 
-// No email sender is configured, so accounts can't confirm via email -
-// requiring confirmation would lock every new registration out.
-builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = false)
-    .AddEntityFrameworkStores<ApplicationDbContext>();
-builder.Services.AddControllersWithViews();
+builder.Services.AddControllers();
+builder.Services.AddProblemDetails();
 
 builder.Services.Configure<FirestoreOptions>(builder.Configuration.GetSection(FirestoreOptions.SectionName));
 builder.Services.AddHttpClient<FirestoreEventsClient>();
@@ -86,7 +82,9 @@ if (app.Environment.IsDevelopment())
 }
 else
 {
-    app.UseExceptionHandler("/Home/Error");
+    // JSON-only API, so exceptions come back as ProblemDetails instead of
+    // redirecting to an HTML error page.
+    app.UseExceptionHandler();
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
@@ -98,14 +96,10 @@ app.UseCors(FrontendCorsPolicy);
 
 app.UseAuthorization();
 
-app.MapStaticAssets();
+// Hitting the bare domain redirects to the health check instead of a 404 -
+// there's no landing page, this is a JSON API for the React frontend.
+app.MapGet("/", () => Results.Redirect("/api/health"));
 
-app.MapControllerRoute(
-    name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}")
-    .WithStaticAssets();
-
-app.MapRazorPages()
-   .WithStaticAssets();
+app.MapControllers();
 
 app.Run();
