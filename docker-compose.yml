@@ -38,5 +38,21 @@ services:
       postgres:
         condition: service_healthy
 
+  auth:
+    build:
+      context: .
+      dockerfile: Dockerfile.Auth
+    ports:
+      - "8081:8080"
+    environment:
+      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=fightcalendar;Username=fightcalendar;Password=fightcalendar"
+      # Local-only throwaway key, same spirit as the Postgres password above -
+      # never reuse this for staging/production, those get their own via Render env vars.
+      Jwt__SigningKey: "local-dev-signing-key-do-not-use-elsewhere"
+      ASPNETCORE_ENVIRONMENT: Production
+    depends_on:
+      postgres:
+        condition: service_healthy
+
 volumes:
   postgres-data:

@@ -1,0 +1,117 @@
+using System.Text;
+using FightCalendar.Auth.Services;
+using FightCalendar.Data;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+
+var builder = WebApplication.CreateBuilder(args);
+
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+    ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(connectionString));
+
+// Core only, not AddDefaultIdentity: we want UserManager for creating/looking
+// up accounts, none of the cookie-based sign-in or Razor UI machinery that
+// comes with the "default" package - this service speaks JSON and JWTs only.
+builder.Services.AddIdentityCore<IdentityUser>()
+    .AddEntityFrameworkStores<ApplicationDbContext>();
+
+var jwtOptions = builder.Configuration.GetSection(JwtOptions.SectionName).Get<JwtOptions>()
+    ?? throw new InvalidOperationException("Jwt configuration section is missing.");
+if (string.IsNullOrWhiteSpace(jwtOptions.SigningKey))
+{
+    // The 'required' modifier alone doesn't stop Get<T>() from producing a
+    // null here, so this is the actual enforcement - fail loudly at startup
+    // instead of a confusing NullReferenceException on the first request.
+    throw new InvalidOperationException("Jwt:SigningKey is not configured.");
+}
+builder.Services.AddSingleton(jwtOptions);
+builder.Services.AddScoped<JwtTokenService>();
+
+builder.Services.Configure<GoogleOptions>(builder.Configuration.GetSection(GoogleOptions.SectionName));
+
+// Any service holding SigningKey can verify a token independently - this is
+// what lets the API (and this service's own /auth/me) check "is this user
+// really logged in" without a database round trip or a call back here.
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        // Keep claim types exactly as issued ("sub", "email", ...) instead
+        // of ASP.NET's legacy remap to long http://schemas.xmlsoap.org/...
+        // URIs - so the claim names read in controllers match the ones
+        // JwtTokenService actually writes.
+        options.MapInboundClaims = false;
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidIssuer = jwtOptions.Issuer,
+            ValidAudience = jwtOptions.Audience,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.SigningKey)),
+        };
+    });
+builder.Services.AddAuthorization();
+
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new Microsoft.OpenApi.OpenApiInfo
+    {
+        Title = "Fight Calendar Auth",
+        Version = "v1",
+        Description = "Google sign-in and JWT issuance for Fight Calendar's other services."
+    });
+});
+
+builder.Services.AddControllers();
+builder.Services.AddProblemDetails();
+
+// Same frontend-CORS pattern as FightCalendar.Web - the frontend calls this
+// service directly from the browser to sign in.
+const string FrontendCorsPolicy = "Frontend";
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(FrontendCorsPolicy, policy =>
+    {
+        var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [];
+        policy.WithOrigins(allowedOrigins).AllowAnyHeader().AllowAnyMethod();
+    });
+});
+
+var app = builder.Build();
+
+if (app.Environment.IsDevelopment() || app.Environment.IsStaging())
+{
+    app.UseSwagger();
+
+    var bannerColor = app.Environment.IsStaging() ? "#f2c744" : "#4caf50";
+    var bannerLabel = app.Environment.EnvironmentName.ToUpperInvariant();
+    app.UseSwaggerUI(options =>
+    {
+        options.HeadContent =
+            $"<div style=\"position:fixed;top:0;left:0;right:0;z-index:9999;background:{bannerColor};" +
+            "color:#000;text-align:center;font-weight:bold;padding:6px;font-family:sans-serif;font-size:13px;\">" +
+            $"{bannerLabel} — internal use only, never shown to real users</div>" +
+            "<style>.swagger-ui { margin-top: 32px; }</style>";
+    });
+}
+
+if (!app.Environment.IsDevelopment())
+{
+    app.UseExceptionHandler();
+    app.UseHsts();
+}
+
+app.UseHttpsRedirection();
+app.UseRouting();
+
+app.UseCors(FrontendCorsPolicy);
+
+app.UseAuthentication();
+app.UseAuthorization();
+
+app.MapGet("/", () => Results.Ok(new { status = "ok", service = "FightCalendar.Auth" }));
+
+app.MapControllers();
+
+app.Run();
