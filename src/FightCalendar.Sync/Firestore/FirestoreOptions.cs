@@ -6,5 +6,4 @@ public class FirestoreOptions
 
     public required string ProjectId { get; init; }
     public required string CollectionName { get; init; }
-    public int SyncIntervalHours { get; init; } = 12;
 }
