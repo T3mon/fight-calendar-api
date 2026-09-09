@@ -62,7 +62,22 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment() || app.Environment.IsStaging())
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+
+    // A visual "this isn't Production" cue for whoever's poking at Swagger.
+    // Safe by construction, not by a runtime check: this whole code path is
+    // absent in Production (see the branch above), so there's no toggle
+    // that could leak it to a real user - the banner simply doesn't exist
+    // outside Development/Staging.
+    var bannerColor = app.Environment.IsStaging() ? "#f2c744" : "#4caf50";
+    var bannerLabel = app.Environment.EnvironmentName.ToUpperInvariant();
+    app.UseSwaggerUI(options =>
+    {
+        options.HeadContent =
+            $"<div style=\"position:fixed;top:0;left:0;right:0;z-index:9999;background:{bannerColor};" +
+            "color:#000;text-align:center;font-weight:bold;padding:6px;font-family:sans-serif;font-size:13px;\">" +
+            $"{bannerLabel} — internal use only, never shown to real users</div>" +
+            "<style>.swagger-ui { margin-top: 32px; }</style>";
+    });
 }
 
 if (app.Environment.IsDevelopment())
