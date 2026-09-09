@@ -7,16 +7,6 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace FightCalendar.Auth.Services;
 
-public class JwtOptions
-{
-    public const string SectionName = "Jwt";
-
-    public required string SigningKey { get; init; }
-    public required string Issuer { get; init; }
-    public required string Audience { get; init; }
-    public int LifetimeDays { get; init; } = 30;
-}
-
 // Mints the token the frontend attaches to API requests. Any service that
 // knows SigningKey can verify one of these independently - no shared
 // session store, no call back to this service to ask "is this still
