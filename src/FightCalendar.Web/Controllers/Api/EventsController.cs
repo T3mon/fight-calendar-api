@@ -55,6 +55,7 @@ public class EventsController(ApplicationDbContext db) : ControllerBase
                 e.Venue,
                 e.Location,
                 e.TapologyLink,
+                e.SubSeries,
                 e.Bouts
                     .OrderBy(b => b.OrderIndex)
                     .Select(b => new BoutDto(b.FighterA.Name, b.FighterB.Name, b.WeightClass))
@@ -84,6 +85,7 @@ public class EventsController(ApplicationDbContext db) : ControllerBase
                 e.Venue,
                 e.Location,
                 e.TapologyLink,
+                e.SubSeries,
                 e.Bouts
                     .OrderBy(b => b.OrderIndex)
                     .Select(b => new BoutDto(b.FighterA.Name, b.FighterB.Name, b.WeightClass))

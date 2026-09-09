@@ -9,6 +9,12 @@ public class Event
 
     public required string Title { get; set; }
 
+    // Derived from Title at sync time (see EventSeriesClassifier) - not
+    // scraped data. Null means this is a flagship/numbered event with no
+    // named sub-series (e.g. "UFC 331"), as opposed to e.g. "Fight Night"
+    // or "Friday Fights".
+    public string? SubSeries { get; set; }
+
     public int PromotionId { get; set; }
     public Promotion Promotion { get; set; } = null!;
 

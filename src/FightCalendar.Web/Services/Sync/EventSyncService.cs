@@ -61,6 +61,7 @@ public class EventSyncService(ApplicationDbContext db, ILogger<EventSyncService>
             }
 
             eventEntity.Title = dto.Title;
+            eventEntity.SubSeries = EventSeriesClassifier.ExtractSubSeries(dto.Organization, dto.Title);
             eventEntity.TapologyLink = dto.Link;
             eventEntity.Venue = dto.Venue;
             eventEntity.Location = dto.Location;

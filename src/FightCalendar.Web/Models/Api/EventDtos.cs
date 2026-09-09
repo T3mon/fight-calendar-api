@@ -24,6 +24,10 @@ public record BoutDto(string FighterA, string FighterB, string? WeightClass);
 /// <param name="Venue">Venue name, if known.</param>
 /// <param name="Location">City/region/country, if known.</param>
 /// <param name="Link">Tapology's page for this event.</param>
+/// <param name="SubSeries">
+/// The promotion's named sub-series this event belongs to, e.g. "Fight Night" or "Friday Fights" - derived
+/// from the title, not scraped data. Null means a flagship/numbered event with no named sub-series (e.g. "UFC 331").
+/// </param>
 /// <param name="MainEvent">The first-listed bout on the card (usually the main event). Null if the card has no bouts yet.</param>
 /// <param name="BoutCount">Total number of bouts on the full card.</param>
 public record EventListItemDto(
@@ -35,6 +39,7 @@ public record EventListItemDto(
     string? Venue,
     string? Location,
     string Link,
+    string? SubSeries,
     BoutDto? MainEvent,
     int BoutCount);
 
@@ -47,6 +52,10 @@ public record EventListItemDto(
 /// <param name="Venue">Venue name, if known.</param>
 /// <param name="Location">City/region/country, if known.</param>
 /// <param name="Link">Tapology's page for this event.</param>
+/// <param name="SubSeries">
+/// The promotion's named sub-series this event belongs to, e.g. "Fight Night" or "Friday Fights" - derived
+/// from the title, not scraped data. Null means a flagship/numbered event with no named sub-series (e.g. "UFC 331").
+/// </param>
 /// <param name="Bouts">Every matchup on the card, in card order (index 0 is the main event).</param>
 public record EventDetailDto(
     int Id,
@@ -57,4 +66,5 @@ public record EventDetailDto(
     string? Venue,
     string? Location,
     string Link,
+    string? SubSeries,
     IReadOnlyList<BoutDto> Bouts);
