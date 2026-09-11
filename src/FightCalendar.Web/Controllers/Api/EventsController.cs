@@ -58,7 +58,7 @@ public class EventsController(ApplicationDbContext db) : ControllerBase
                 e.SubSeries,
                 e.Bouts
                     .OrderBy(b => b.OrderIndex)
-                    .Select(b => new BoutDto(b.FighterA.Name, b.FighterB.Name, b.WeightClass))
+                    .Select(b => new BoutDto(b.FighterA.Name, b.FighterA.TapologyLink, b.FighterB.Name, b.FighterB.TapologyLink, b.WeightClass))
                     .FirstOrDefault(),
                 e.Bouts.Count))
             .ToListAsync(ct);
@@ -88,7 +88,7 @@ public class EventsController(ApplicationDbContext db) : ControllerBase
                 e.SubSeries,
                 e.Bouts
                     .OrderBy(b => b.OrderIndex)
-                    .Select(b => new BoutDto(b.FighterA.Name, b.FighterB.Name, b.WeightClass))
+                    .Select(b => new BoutDto(b.FighterA.Name, b.FighterA.TapologyLink, b.FighterB.Name, b.FighterB.TapologyLink, b.WeightClass))
                     .ToList()))
             .FirstOrDefaultAsync(ct);
 

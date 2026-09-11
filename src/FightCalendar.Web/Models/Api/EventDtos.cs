@@ -8,9 +8,11 @@ public record PromotionDto(int Id, string Code, string Name);
 
 /// <summary>One matchup within an event's fight card.</summary>
 /// <param name="FighterA">First fighter's name.</param>
+/// <param name="FighterALink">First fighter's Tapology profile page.</param>
 /// <param name="FighterB">Second fighter's name.</param>
+/// <param name="FighterBLink">Second fighter's Tapology profile page.</param>
 /// <param name="WeightClass">Weight class, e.g. "155 lbs". Null if Tapology didn't list one.</param>
-public record BoutDto(string FighterA, string FighterB, string? WeightClass);
+public record BoutDto(string FighterA, string FighterALink, string FighterB, string FighterBLink, string? WeightClass);
 
 /// <summary>
 /// One row in the calendar feed. Carries only the headline bout, not the
