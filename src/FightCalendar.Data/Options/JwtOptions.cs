@@ -1,5 +1,8 @@
-namespace FightCalendar.Auth.Options;
+namespace FightCalendar.Data.Options;
 
+// Shared between FightCalendar.Auth (mints tokens) and FightCalendar.Web
+// (validates them) - both must bind the exact same Issuer/Audience/
+// SigningKey or a token minted by one is rejected by the other.
 public class JwtOptions
 {
     public const string SectionName = "Jwt";

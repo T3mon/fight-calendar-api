@@ -1,3 +1,5 @@
+using System.IdentityModel.Tokens.Jwt;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FightCalendar.Web.Controllers.Api;
@@ -19,4 +21,17 @@ public class HealthController(IWebHostEnvironment env) : ControllerBase
         version = Version,
         serverTimeUtc = DateTimeOffset.UtcNow,
     });
+
+    /// <summary>
+    /// Echoes the identity carried by the caller's <c>Authorization: Bearer</c> token - a diagnostic for
+    /// confirming this API is actually validating tokens minted by FightCalendar.Auth, not just that it starts.
+    /// </summary>
+    [HttpGet("whoami")]
+    [Authorize]
+    public IActionResult WhoAmI()
+    {
+        var id = User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
+        var email = User.FindFirst(JwtRegisteredClaimNames.Email)?.Value;
+        return Ok(new { id, email });
+    }
 }

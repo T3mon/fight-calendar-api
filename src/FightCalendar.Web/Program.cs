@@ -1,13 +1,61 @@
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
+using Microsoft.IdentityModel.Tokens;
 using FightCalendar.Data;
+using FightCalendar.Data.Options;
 
 var builder = WebApplication.CreateBuilder(args);
+
+if (builder.Environment.IsDevelopment())
+{
+    // Neither the automatic user-secrets loading nor reflecting for
+    // UserSecretsIdAttribute is reliable under this VS 18 Insiders /
+    // .NET 10 preview combo (the FileProvider ends up rooted at the
+    // project folder, and GetCustomAttribute returns null even though
+    // it's present in the compiled AssemblyInfo). Load the secrets file
+    // directly from its fixed OS path instead, using the id straight
+    // from FightCalendar.Web.csproj's <UserSecretsId>. Same workaround as
+    // FightCalendar.Auth/Program.cs, which hit this first.
+    const string secretsId = "aspnet-FightCalendar.Web-a9fd289b-e2dc-48bb-a17b-225a95fd8593";
+    var secretsDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Microsoft", "UserSecrets", secretsId);
+    if (Directory.Exists(secretsDir))
+    {
+        builder.Configuration.AddJsonFile(new PhysicalFileProvider(secretsDir), "secrets.json", optional: true, reloadOnChange: false);
+    }
+}
 
 // Add services to the container.
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(connectionString));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
+
+// Validates the JWT that FightCalendar.Auth mints - same Issuer/Audience/
+// SigningKey on both sides (see JwtOptions), no shared session store or
+// call back to Auth needed to check "is this token legit".
+var jwtOptions = builder.Configuration.GetSection(JwtOptions.SectionName).Get<JwtOptions>()
+    ?? throw new InvalidOperationException("Jwt configuration section is missing.");
+if (string.IsNullOrWhiteSpace(jwtOptions.SigningKey))
+{
+    throw new InvalidOperationException("Jwt:SigningKey is not configured.");
+}
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        // Keep claim types exactly as issued ("sub", "email", ...) instead
+        // of ASP.NET's legacy remap to long http://schemas.xmlsoap.org/...
+        // URIs, matching FightCalendar.Auth's own validation setup.
+        options.MapInboundClaims = false;
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidIssuer = jwtOptions.Issuer,
+            ValidAudience = jwtOptions.Audience,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.SigningKey)),
+        };
+    });
+builder.Services.AddAuthorization();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
@@ -86,6 +134,7 @@ app.UseRouting();
 
 app.UseCors(FrontendCorsPolicy);
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 // Hitting the bare domain redirects to the health check instead of a 404 -

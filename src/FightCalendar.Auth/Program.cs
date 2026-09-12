@@ -2,12 +2,31 @@ using System.Text;
 using FightCalendar.Auth.Options;
 using FightCalendar.Auth.Services;
 using FightCalendar.Data;
+using FightCalendar.Data.Options;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
+
+if (builder.Environment.IsDevelopment())
+{
+    // Neither the automatic user-secrets loading nor reflecting for
+    // UserSecretsIdAttribute is reliable under this VS 18 Insiders /
+    // .NET 10 preview combo (the FileProvider ends up rooted at the
+    // project folder, and GetCustomAttribute returns null even though
+    // it's present in the compiled AssemblyInfo). Load the secrets file
+    // directly from its fixed OS path instead, using the id straight
+    // from FightCalendar.Auth.csproj's <UserSecretsId>.
+    const string secretsId = "aspnet-FightCalendar.Auth-8b3f1c7e-2d4a-4b9e-9f6c-1a5e7d3c8b2f";
+    var secretsDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Microsoft", "UserSecrets", secretsId);
+    if (Directory.Exists(secretsDir))
+    {
+        builder.Configuration.AddJsonFile(new PhysicalFileProvider(secretsDir), "secrets.json", optional: true, reloadOnChange: false);
+    }
+}
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
     ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
