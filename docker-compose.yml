@@ -27,6 +27,12 @@ services:
       # Must match auth's Jwt__SigningKey exactly - this is the service that
       # validates the tokens auth mints, not one that mints its own.
       Jwt__SigningKey: "local-dev-signing-key-do-not-use-elsewhere"
+      # Cors:AllowedOrigins only exists in appsettings.Development.json,
+      # which doesn't load under ASPNETCORE_ENVIRONMENT=Production - without
+      # this the browser's own fetch calls get silently CORS-blocked (curl
+      # never notices, CORS is enforced client-side only).
+      Cors__AllowedOrigins__0: "http://localhost:5173"
+      Cors__AllowedOrigins__1: "http://localhost:3000"
     depends_on:
       postgres:
         condition: service_healthy
@@ -61,6 +67,9 @@ services:
       # sandbox sender only delivers to your own Resend account email
       # until a domain is verified, which is fine for local testing.
       Resend__ApiKey: "${RESEND_API_KEY}"
+      # Same reasoning as web's Cors__AllowedOrigins above.
+      Cors__AllowedOrigins__0: "http://localhost:5173"
+      Cors__AllowedOrigins__1: "http://localhost:3000"
     depends_on:
       postgres:
         condition: service_healthy
