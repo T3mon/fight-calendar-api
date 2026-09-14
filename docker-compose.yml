@@ -24,6 +24,9 @@ services:
     environment:
       ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=fightcalendar;Username=fightcalendar;Password=fightcalendar"
       ASPNETCORE_ENVIRONMENT: Production
+      # Must match auth's Jwt__SigningKey exactly - this is the service that
+      # validates the tokens auth mints, not one that mints its own.
+      Jwt__SigningKey: "local-dev-signing-key-do-not-use-elsewhere"
     depends_on:
       postgres:
         condition: service_healthy
@@ -50,6 +53,14 @@ services:
       # never reuse this for staging/production, those get their own via Render env vars.
       Jwt__SigningKey: "local-dev-signing-key-do-not-use-elsewhere"
       ASPNETCORE_ENVIRONMENT: Production
+      # The frontend isn't part of this compose stack (it's a separate repo,
+      # run with `npm run dev`) - this is just where confirmation-email
+      # links point so they land on its confirm-email page.
+      Frontend__BaseUrl: "http://localhost:5173"
+      # Real key from .env (gitignored, see .env.example) - the shared
+      # sandbox sender only delivers to your own Resend account email
+      # until a domain is verified, which is fine for local testing.
+      Resend__ApiKey: "${RESEND_API_KEY}"
     depends_on:
       postgres:
         condition: service_healthy

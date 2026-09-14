@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -35,8 +36,23 @@ builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql
 // Core only, not AddDefaultIdentity: we want UserManager for creating/looking
 // up accounts, none of the cookie-based sign-in or Razor UI machinery that
 // comes with the "default" package - this service speaks JSON and JWTs only.
-builder.Services.AddIdentityCore<IdentityUser>()
-    .AddEntityFrameworkStores<ApplicationDbContext>();
+// AddSignInManager gives password checks free brute-force lockout tracking
+// without using its cookie sign-in; AddDefaultTokenProviders is what makes
+// email-confirmation tokens (GenerateEmailConfirmationTokenAsync) work at all.
+builder.Services.AddIdentityCore<IdentityUser>(options =>
+    {
+        // Length over complexity rules - current guidance (NIST 800-63B) finds
+        // forced digit/case/symbol mixes push people toward predictable
+        // substitutions ("Password1!") more than they add real strength.
+        options.Password.RequireDigit = false;
+        options.Password.RequireLowercase = false;
+        options.Password.RequireUppercase = false;
+        options.Password.RequireNonAlphanumeric = false;
+        options.Password.RequiredLength = 10;
+    })
+    .AddEntityFrameworkStores<ApplicationDbContext>()
+    .AddSignInManager()
+    .AddDefaultTokenProviders();
 
 var jwtOptions = builder.Configuration.GetSection(JwtOptions.SectionName).Get<JwtOptions>()
     ?? throw new InvalidOperationException("Jwt configuration section is missing.");
@@ -51,6 +67,26 @@ builder.Services.AddSingleton(jwtOptions);
 builder.Services.AddScoped<JwtTokenService>();
 
 builder.Services.Configure<GoogleOptions>(builder.Configuration.GetSection(GoogleOptions.SectionName));
+
+var frontendOptions = builder.Configuration.GetSection(FrontendOptions.SectionName).Get<FrontendOptions>()
+    ?? throw new InvalidOperationException("Frontend configuration section is missing.");
+if (string.IsNullOrWhiteSpace(frontendOptions.BaseUrl))
+{
+    throw new InvalidOperationException("Frontend:BaseUrl is not configured.");
+}
+builder.Services.AddSingleton(Options.Create(frontendOptions));
+
+var resendOptions = builder.Configuration.GetSection(ResendOptions.SectionName).Get<ResendOptions>()
+    ?? throw new InvalidOperationException("Resend configuration section is missing.");
+if (string.IsNullOrWhiteSpace(resendOptions.ApiKey) || string.IsNullOrWhiteSpace(resendOptions.FromAddress))
+{
+    throw new InvalidOperationException("Resend:ApiKey / Resend:FromAddress is not configured.");
+}
+builder.Services.AddSingleton(Options.Create(resendOptions));
+builder.Services.AddHttpClient<IEmailSender, ResendEmailSender>(client =>
+{
+    client.BaseAddress = new Uri("https://api.resend.com/");
+});
 
 // Any service holding SigningKey can verify a token independently - this is
 // what lets the API (and this service's own /auth/me) check "is this user

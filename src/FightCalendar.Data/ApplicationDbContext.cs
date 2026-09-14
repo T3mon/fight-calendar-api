@@ -1,4 +1,5 @@
 using FightCalendar.Data.Models.Domain;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
@@ -66,6 +67,14 @@ public class ApplicationDbContext : IdentityDbContext
             e.HasOne(f => f.Fighter)
                 .WithMany()
                 .HasForeignKey(f => f.FighterId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // No navigation property back to IdentityUser - UserFollow doesn't
+            // need to load the user, it just needs deleting a user to clean
+            // up their follows instead of leaving orphaned rows behind.
+            e.HasOne<IdentityUser>()
+                .WithMany()
+                .HasForeignKey(f => f.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             e.HasIndex(f => new { f.UserId, f.PromotionId, f.FighterId }).IsUnique();
