@@ -114,14 +114,25 @@ public class AuthController(
         return Ok();
     }
 
-    /// <summary>Confirms the email address using the token from the link sent by <c>POST /auth/register</c>.</summary>
+    /// <summary>
+    /// Confirms the email address using the token from the link sent by <c>POST /auth/register</c>, and signs the
+    /// user in - clicking the link already proves they control the inbox, so demanding the password again is friction.
+    /// </summary>
     [HttpPost("confirm-email")]
-    public async Task<IActionResult> ConfirmEmail(ConfirmEmailRequest request)
+    public async Task<ActionResult<AuthResponseDto>> ConfirmEmail(ConfirmEmailRequest request)
     {
         var user = await userManager.FindByIdAsync(request.UserId);
         if (user is null)
         {
             return BadRequest("This confirmation link is invalid.");
+        }
+
+        if (user.EmailConfirmed)
+        {
+            // Spent link, not a failure: people double-click, and corporate mail
+            // scanners follow links before the recipient ever sees them. There's
+            // no session to hand back though - see the security stamp below.
+            return Conflict("This email is already confirmed. Sign in instead.");
         }
 
         var result = await userManager.ConfirmEmailAsync(user, request.Token);
@@ -130,7 +141,13 @@ public class AuthController(
             return BadRequest("This confirmation link is invalid or has expired.");
         }
 
-        return Ok();
+        // Now that this link mints a session, it's a credential, and email links
+        // leak - forwarded mail, browser history, screenshots. Rotating the
+        // security stamp invalidates the token so the link works exactly once.
+        await userManager.UpdateSecurityStampAsync(user);
+
+        var (token, expiresAt) = jwtTokenService.CreateToken(user);
+        return Ok(new AuthResponseDto(token, expiresAt, user.Email!));
     }
 
     /// <summary>
