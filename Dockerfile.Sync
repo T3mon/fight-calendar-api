@@ -1,13 +1,13 @@
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 
-COPY FightCalendar.sln .
-COPY src/FightCalendar.Sync/FightCalendar.Sync.csproj src/FightCalendar.Sync/
-COPY src/FightCalendar.Data/FightCalendar.Data.csproj src/FightCalendar.Data/
-RUN dotnet restore src/FightCalendar.Sync/FightCalendar.Sync.csproj
+COPY WhoFights.sln .
+COPY src/WhoFights.Sync/WhoFights.Sync.csproj src/WhoFights.Sync/
+COPY src/WhoFights.Data/WhoFights.Data.csproj src/WhoFights.Data/
+RUN dotnet restore src/WhoFights.Sync/WhoFights.Sync.csproj
 
 COPY src/ src/
-RUN dotnet publish src/FightCalendar.Sync/FightCalendar.Sync.csproj -c Release -o /app --no-restore
+RUN dotnet publish src/WhoFights.Sync/WhoFights.Sync.csproj -c Release -o /app --no-restore
 
 FROM mcr.microsoft.com/dotnet/runtime:10.0 AS runtime
 WORKDIR /app
@@ -19,4 +19,4 @@ RUN apt-get update && apt-get install -y --no-install-recommends libgssapi-krb5-
 
 COPY --from=build /app .
 
-ENTRYPOINT ["dotnet", "FightCalendar.Sync.dll"]
+ENTRYPOINT ["dotnet", "WhoFights.Sync.dll"]

@@ -1,13 +1,13 @@
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 
-COPY FightCalendar.sln .
-COPY src/FightCalendar.Auth/FightCalendar.Auth.csproj src/FightCalendar.Auth/
-COPY src/FightCalendar.Data/FightCalendar.Data.csproj src/FightCalendar.Data/
-RUN dotnet restore src/FightCalendar.Auth/FightCalendar.Auth.csproj
+COPY WhoFights.sln .
+COPY src/WhoFights.Auth/WhoFights.Auth.csproj src/WhoFights.Auth/
+COPY src/WhoFights.Data/WhoFights.Data.csproj src/WhoFights.Data/
+RUN dotnet restore src/WhoFights.Auth/WhoFights.Auth.csproj
 
 COPY src/ src/
-RUN dotnet publish src/FightCalendar.Auth/FightCalendar.Auth.csproj -c Release -o /app --no-restore
+RUN dotnet publish src/WhoFights.Auth/WhoFights.Auth.csproj -c Release -o /app --no-restore
 
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
 WORKDIR /app
@@ -21,4 +21,4 @@ COPY --from=build /app .
 
 ENV ASPNETCORE_URLS=http://+:8080
 EXPOSE 8080
-ENTRYPOINT ["dotnet", "FightCalendar.Auth.dll"]
+ENTRYPOINT ["dotnet", "WhoFights.Auth.dll"]

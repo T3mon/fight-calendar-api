@@ -1,4 +1,4 @@
-# Fight Calendar API
+# WhoFights API
 
 Read-only JSON API aggregating upcoming combat sports events (UFC, ONE, RIZIN, BKFC, and other tracked promotions), scraped from [Tapology](https://www.tapology.com). Built to be the shared backend for whatever frontends come later (web, mobile, Telegram bot) rather than bundled with any one of them.
 
@@ -39,7 +39,7 @@ cd fight-calendar-api
 docker compose up -d postgres
 
 # Apply the schema
-cd src/FightCalendar.Web
+cd src/WhoFights.Web
 dotnet ef database update
 
 # Run it
