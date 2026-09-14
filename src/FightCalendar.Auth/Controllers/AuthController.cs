@@ -19,7 +19,8 @@ public class AuthController(
     JwtTokenService jwtTokenService,
     IEmailSender emailSender,
     IOptions<GoogleOptions> googleOptions,
-    IOptions<FrontendOptions> frontendOptions) : ControllerBase
+    IOptions<FrontendOptions> frontendOptions,
+    ILogger<AuthController> logger) : ControllerBase
 {
     private const string GoogleLoginProvider = "Google";
 
@@ -94,7 +95,22 @@ public class AuthController(
             return Problem(string.Join("; ", createResult.Errors.Select(e => e.Description)), statusCode: StatusCodes.Status400BadRequest);
         }
 
-        await SendConfirmationEmailAsync(user, ct);
+        try
+        {
+            await SendConfirmationEmailAsync(user, ct);
+        }
+        catch (Exception ex)
+        {
+            // Don't leave a permanently-unconfirmable account behind if the email
+            // never went out - undo the CreateAsync above so registration either
+            // fully succeeds or fully fails, never a half-finished state.
+            await userManager.DeleteAsync(user);
+            logger.LogError(ex, "Failed to send confirmation email during registration for {Email}", request.Email);
+            return Problem(
+                "We couldn't send a confirmation email right now. Please try again shortly.",
+                statusCode: StatusCodes.Status502BadGateway);
+        }
+
         return Ok();
     }
 
@@ -127,7 +143,17 @@ public class AuthController(
         var user = await userManager.FindByEmailAsync(request.Email);
         if (user is not null && !user.EmailConfirmed)
         {
-            await SendConfirmationEmailAsync(user, ct);
+            try
+            {
+                await SendConfirmationEmailAsync(user, ct);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Failed to send confirmation email during resend for {Email}", request.Email);
+                return Problem(
+                    "We couldn't send a confirmation email right now. Please try again shortly.",
+                    statusCode: StatusCodes.Status502BadGateway);
+            }
         }
 
         return Ok();
